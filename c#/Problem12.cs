@@ -1,118 +1,88 @@
 using System;
 using System.IO;
 using System.Collections;
+using System.Collections.Generic;
 
 class Problem12
 {
+    /*
+     * Note that 1 + 2 + 3 ... + (n-1) + n = (n)(n+1)/2
+     * and note n is coprime to n+1
+     */
     static void Main()
     {
-        // // set static number of desired number of divisors
-        // int desiredNumDivisors = 500;
-
-
-        // // Note: sum( 1 + 2 ... n ) = ( n* ( n + 1 )) / 2
-        // // use this fact to determine triangle numbers
-
-        // // use variable at end to produce triangle number
-        // int number;
-        // // use variable to store current number of divisors - set to 1 initially
-        // int numDivisors = 0;
-
-        // // create variable i to store the n in the sum formula and set it to 1
-        // int i = 1;
-
-        // // Use Prime factorization - the product of the exponents of the number
-        // // in prime factorization is equal to the number of divisors
-
-
-        // while( numDivisors < desiredNumDivisors )
-        // {
-        //     // the number of divisors is the product of the number of divisors
-        //     // of the two numbers, i/2 and i+1 or i and (i+1)/2 depending on
-        //     // which of the two is even
-        //     if( i % 2 == 0 )
-        //     {
-        //         numDivisors = divCount(i/2) * divCount(i + 1) + 1;
-        //     }
-        //     else
-        //     {
-        //         // add one to count for the divisor '1'
-        //         numDivisors *= divCount(i) * divCount((i + 1)/2) + 1;
-        //     }
-        //     Console.WriteLine(i*(i-1)/2);
-        //     Console.WriteLine(numDivisors);
-        //     i += 1;
-        // }
-
-
-        // // Display the number that has at least 500 factors
-        // i = i - 1;
-        // number = i * (i - 1) / 2;
-        // Console.WriteLine(number);
         int number = 1;
         int i = 2;
         int cnt = 0;
         int Dn1 = 2;
         int Dn = 2;
+        int[] primelist = getPrimeNumbers(1000);
 
         while (cnt < 500) {
             if (i % 2 == 0) {
-                Dn = divCount(i + 1);
+                Dn = getNumberOfDivisors(i + 1, primelist);
                 cnt = Dn * Dn1;
             } else {
-                Dn1 = divCount((i + 1) / 2);
+                Dn1 = getNumberOfDivisors((i + 1) / 2, primelist);
                 cnt = Dn*Dn1;
             }
             i++;
         }
-
         number = i * (i - 1) / 2;
         Console.WriteLine(number);
     }
 
-    private static int divCount(int number) {
-        Console.WriteLine("AAA"+number);
-        int originalNum = number;
-        int divisorCount = 1;
+    private static int getNumberOfDivisors(int number, int[] primelist) {
+        int nod = 1;
         int exponent;
-        bool isPrime;
-        for( int i = 2; i*i <= originalNum; i ++ )
-        {
+        int remain = number;
 
-            isPrime = true;
-            // if the number is not divisible by i go to next loop
-            if( number % i != 0 )
-            {
-                continue;
+        for (int i = 0; i < primelist.Length; i++) {
+            // In case there is a remainder this is a prime factor as well
+            // The exponent of that factor is 1
+            if (primelist[i] * primelist[i] > number) {
+                return nod * 2;
             }
-            // check to see the number is prime
-            for ( int j = 2; j*j <= i; j++ )
-            {
-                // if the divisor is 2, skip this step
-                if( i == 2 )
-                {
-                    break;
-                }
-                // i is not prime
-                if( i % j == 0 )
-                {
-                    isPrime = false;
-                    break;
-                }
+
+            exponent = 1;
+            while (remain % primelist[i] == 0) {
+                exponent++;
+                remain = remain / primelist[i];
             }
-            exponent = 0;
-            if (isPrime)
-            {
-                while( number % i == 0 )
-                {
-                    number = number/i;
-                    exponent += 1;
-                }
-                divisorCount *= exponent;
+            nod *= exponent;
+
+            //If there is no remainder, return the count
+            if (remain == 1) {
+                return nod;
             }
         }
-        Console.WriteLine("bbb" + divisorCount);
-        return divisorCount;
+        return nod;
+    }
+
+    private static int[] getPrimeNumbers(int maxVal) {
+        int sieveBound = (int)(maxVal - 1) / 2;
+        int upperSqrt = ((int)Math.Sqrt(maxVal) - 1) / 2;
+
+        BitArray IsPrime = new BitArray(sieveBound + 1, true);
+
+        for (int i = 1; i <= upperSqrt; i++) {
+            if (IsPrime.Get(i)) {
+                for (int j = i * 2 * (i + 1); j <= sieveBound; j += 2 * i + 1) {
+                    IsPrime.Set(j, false);
+                }
+            }
+        }
+
+        List<int> numbers = new List<int>((int)(maxVal / (Math.Log(maxVal) - 1.08366)));
+        numbers.Add(2);
+
+        for (int i = 1; i <= sieveBound; i++) {
+            if (IsPrime.Get(i)) {
+                numbers.Add(2 * i + 1);
+            }
+        }
+
+        return numbers.ToArray();
     }
 
 }

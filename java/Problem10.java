@@ -1,41 +1,52 @@
 import java.io.*;
+import java.util.List;
+import java.lang.Math;
+import java.util.ArrayList;
 
 public class Problem10
 {
     public static void main(String[] args) throws IOException
     {
         final int primesBelowValue = 2000000;
-        long total;
-        // initialize boolean for whether number is prime to true
-        boolean isPrime = true;
+        // get primes below 2000000
+        List<Integer> primeList = getPrimeNumbers(primesBelowValue);
 
-        // initialize total to 2 because of first prime number, 2
-        total = 2;
+        long total = 0l;
 
-        // increase by 2 each time because all primes other than 2
-        // are odd
-        for(int i = 3; i < primesBelowValue; i = i + 2)
-        {
-            // see for each number i, if there exists a factor j that divides i
-            // go up to sqrt(i)
-            for(int j = 2; j*j <= i; j++)
-            {
-                if( i % j == 0 )
-                {
-                    isPrime = false;
-                    break;
-                }
-            }
-            if(isPrime)
-            {
-                total += i;
-            }
-            // reset isPrime to true
-            isPrime = true;
+        for(int prime : primeList) {
+            total += prime;
         }
 
-        // print the final sum of prime numbers
         System.out.println(total);
 
+    }
+
+    private static List<Integer> getPrimeNumbers(int maxVal) {
+        int sieveBound = (int)(maxVal - 1) / 2;
+        int upperSqrt = ((int)Math.sqrt(maxVal) - 1) / 2;
+
+        boolean[] isPrime = new boolean[sieveBound + 1];
+        for(int i = 1; i < isPrime.length; i++) {
+            isPrime[i] = true;
+        }
+
+        for (int i = 1; i <= upperSqrt; i++) {
+            if (isPrime[i]) {
+                for (int j = i * 2 * (i + 1); j <= sieveBound; j += 2 * i + 1) {
+                    isPrime[j] = false;
+                }
+            }
+        }
+
+        List<Integer> numbers = new ArrayList<Integer>();
+        numbers.add(2);
+
+        for (int i = 1; i <= sieveBound; i++) {
+            if (isPrime[i]) {
+                numbers.add(2 * i + 1);
+            }
+        }
+
+        return numbers;
     }
 }
